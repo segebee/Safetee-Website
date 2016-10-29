@@ -1,86 +1,59 @@
 <?php
-
-/**
- * Description of PaymentGateway
- *
- * @author Abiola.Adebanjo
- */
 require_once './interswitch_php/lib/Interswitch.php';
 use Interswitch\Interswitch as InterswitchAPI;
 
-const CLIENT_ID = "IKIA9614B82064D632E9B6418DF358A6A4AEA84D7218";
-const CLIENT_SECRET = "XCTiBtLy1G9chAnyg0z3BcaFK4cVpwDg/GTw2EmjTZ8=";
-const PURCHASE_RESOURCE_URL = "api/v2/purchases";
+const CLIENT_ID = "IKIAF6C068791F465D2A2AA1A3FE88343B9951BAC9C3";
+const CLIENT_SECRET = "FTbMeBD7MtkGBQJw1XoM74NaikuPL13Sxko1zb0DMjI=";
+const PURCHASE_RESOURCE_URL = "api/v1/pwm/subscribers/2348090673520/tokens";
 const HTTP_CODE = "HTTP_CODE";
 const RESPONSE_BODY = "RESPONSE_BODY";
-const CERTIFICATE_FILE_PATH = "paymentgateway.crt";
+
+function doRequestToken($amount, $transactionRef, $interswitchAPI) {
+    $FEPI = 455;
+    $httpMethod = "POST";
+    $headers = array(
+        'frontEndPartnerId: ' . $FEPI
+    );
+    $data = array(
+        "ttid" => "123",
+        "paymentMethodTypeCode" => "MMO",
+        "paymentMethodCode" => "WEMA",
+        "tokenLifeTimeInMinutes" => 10,
+        "payWithMobileChannel" => "ATM",
+        "transactionType" => "Withdrawal",
+        "codeGenerationChannel" => "Mobile",
+        "amount" => $amount,
+        "accountNo" => "205015250201000100",
+        "accountType" => "20",
+        "autoEnroll" => "false",
+        "oneTimePin" => "1234"
+    );
+    $request = json_encode($data);
+    return $interswitchAPI->send(PURCHASE_RESOURCE_URL, $httpMethod, $request, $headers);
+//    echo $request;
+}
+$interswitchAPI = new InterswitchAPI(CLIENT_ID, CLIENT_SECRET);
 
 if (isset($_POST['amount']))
 {
-  $interswitchAPI = new InterswitchAPI(CLIENT_ID, CLIENT_SECRET);
-    $authData = $interswitchAPI->getAuthData(CERTIFICATE_FILE_PATH, '1', '6280511000000095', '5004', '111', '1111');
+  //$amount = number_format($_POST['amount'],2,'.',','); 
+  $amount = $_POST['amount']*100;
 
-  $result = doPurchase($authData, "segebee@gmail.com", $_POST['amount'], $interswitchAPI);
+  $ref= time();
+  //echo $amount;
+  $result = doRequestToken($amount, $ref, $interswitchAPI);
   //print_r($result);
-  if ($result['HTTP_CODE'] == 200) //its a success
+  if ($result['HTTP_CODE'] == 201) //its a success
   {
     $body = json_decode($result['RESPONSE_BODY']);
-    //print_r($body); 
+    $subscriberId = $body->subscriberId;
+    $payWithMobileToken = $body->payWithMobileToken;
+    $tokenLifeTimeInMinutes = $body->tokenLifeTimeInMinutes;
 
-    $transactionIdentifier = $body->transactionIdentifier;
-    $token = $body->token;
-    $tokenExpiryDate = $body->tokenExpiryDate;
-    $panLast4Digits = $body->panLast4Digits;
-    $cardType = $body->cardType;
-    $message = $body->message;
-    $amount = $body->amount;
-    $status = 1;
-    $transactionRef = $body->transactionRef;
-
-    $message = "Donation was successful";
-    //print_r($body);
-  }
-  else
-  {
-    $message = "Donation failed";
+    $message = "Payment Code is ".$payWithMobileToken.". This has been sent to the Recipient's Email";
+    @mail($_POST['email'], 'Safetee Rewards', $message);
   }
 }
-
-function doPurchase($authData, $customerEmail, $amount, $interswitchAPI) {
-
-    $httpMethod = "POST";
-    $transactionRef = generateRef();
-    //$customerId = "api-jam@interswitchgroup.com";
-    $currency = "NGN";
-
-    $data = array(
-        "customerId" => $customerEmail,
-        "amount" => $amount,
-        "transactionRef" => $transactionRef,
-        "currency" => $currency,
-        "authData" => $authData
-    );
-
-    $request = json_encode($data);
-    return $interswitchAPI->send(PURCHASE_RESOURCE_URL, $httpMethod, $request);
-}
-
-function doTransactionQuery($amount, $transactionRef, $interswitchAPI) {
-
-    $httpMethod = "GET";
-    $headers = array(
-        'amount: ' . $amount,
-        'transactionRef: ' . $transactionRef
-    );
-
-    return $interswitchAPI->send(PURCHASE_RESOURCE_URL, $httpMethod, null, $headers);
-}
-
-function generateRef() {
-    $transRef = "ISW|API|JAM|" . mt_rand(0, 65535);
-    return $transRef;
-}
-
 ?>
 
 <!doctype html>
@@ -167,30 +140,23 @@ function generateRef() {
 <section>
 <div class="row">
 
-<h1>Support An NGO</h1>
+<h1>Send Money</h1>
 
-<p>Supporting Victims of Abuse requires a lot of resources and most times NGOs are overwhelmed. Your money helps these NGOs 
-to continue their charitable work.</p>
+<p>Send Money to support a Victim or Reward a Good Samaritan.</p>
 
-<p>To Donate, please fill the form below.</p>
+<p>To Send Money, please fill the form below.</p>
 
 <div id="formwrapper">
-        <div style="font-weight: bold; font-size: 18px; text-transform: uppercase; color: green"><?php if (isset($message)) echo $message; ?></div>
-        <form method="post" action="donate.php">
-            <label>Your Name</label>
-            <input id="contactname" name="name" required>
-            <label>Your Email</label>
+        <div style="font-weight: bold; font-size: 16px; color: green"><?php if (isset($message)) echo $message; ?></div>
+        <form method="post" action="sendmoney.php">
+            <label>Recipient Phone</label>
+            <input id="contactname" name="phone" required>
+            <label>Recipient Email</label>
             <input id="contactemail" name="email" type="email" required>
-            <label>NGO</label>
-            <select name="ngos" id="contactname" required>
-            	<option>Mirabel Centre</option>
-            	<option>Stop SCANN</option>
-            	<option>Project Alert</option>
-            </select>
             <label>Amount</label>
             <input id="contactemail" name="amount" type="number" required>
             
-            <input id="submitcontact" name="submit" type="submit" value="Donate" class="gradient">
+            <input id="submitcontact" name="submit" type="submit" value="Send" class="gradient">
         </form>
     </div>
 
