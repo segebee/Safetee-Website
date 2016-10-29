@@ -57,12 +57,12 @@
 
 <!--Start of Social Elements-->
 <aside id="" class="one_third ">
-  <ul>
-    <li><a class="" target="_blank" title="" href=""><span>Resources</span></a></li>
+  <ul style="list-style: none;">
+    <li><a class="" title="" href="donate.php"><span style="color: #fff;font-size: 16px">Donate</span></a></li>
   </ul>
 </aside>
 
-<aside id="social_elements" class="two_thirds last">
+<aside id="social_elements" class="one_thirds last">
 <ul>
 <li><a class="" target="_blank" title="Twitter" href=""><span>Resources</span></a></li>
 <li><a class="twitter" target="_blank" title="Twitter" href=""><span>Twitter</span></a></li>
