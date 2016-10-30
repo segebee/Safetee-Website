@@ -56,12 +56,12 @@
 <!--End of Header Logo-->
 
 <!--Start of Social Elements-->
-<aside id="" class="one_third ">
+<!-- <aside id="" class="one_third ">
   <ul style="list-style: none;">
     <li><a class="" title="" href="donate.php"><span style="color: #fff;font-size: 16px">Donate</span></a></li>
     <li><a class="" title="" href="sendmoney.php"><span style="color: #fff;font-size: 16px">Send Money</span></a></li>
   </ul>
-</aside>
+</aside> -->
 
 <aside id="social_elements" class="one_thirds last">
 <ul>
