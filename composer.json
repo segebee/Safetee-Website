@@ -1,0 +1,16 @@
+{
+    "name": "safetee/safetee-web",
+    "description": "Safetee Website",
+    "authors": [
+        {
+            "name": "Segebee",
+            "email": "segebee@gmail.com"
+        }
+    ],
+    /*"autoload": {
+        "psr-4": {
+            "Interswitch\\": "lib/"
+        }
+    },*/
+    "require": {}
+}
